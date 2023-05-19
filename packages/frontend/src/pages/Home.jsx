@@ -15,35 +15,72 @@ export default observer(() => {
   return (
     <div className="container">
       <div className="container" style={{ flexDirection: 'column' }}>
-        <div >
+        <div>
           <div>Registered Identities</div>
-          {auth.identities.map(id => {
-            const isMe = id.pubkey.toString() === auth.identity.pubkey.toString()
+          {auth.identities.map((id) => {
+            const isMe =
+              id.pubkey.toString() === auth.identity.pubkey.toString()
             return (
-            <div key={id.pubkey} style={{ padding: '4px', border: '1px solid black', margin: '4px' }}>
-              <div style={{borderBottom: '1px solid black'}}>pubkey: {ui.fieldElement(id.pubkey)} {isMe ? (<span style={{fontWeight:'bold'}}>(me)</span>) : null}</div>
-          {auth.tokensByIdentity[id.pubkey].map(token => (
-            <div key={token.hash} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
-              <div>{`token${token.index}`}: {ui.fieldElement(token.hash)}</div>
-              {isMe ? <Button style={{ marginLeft: '4px' }} onClick={() => auth.removeToken(token.hash)}>Disable</Button> : null}
-            </div>
-            ))}
-            </div>
-            )})}
+              <div
+                key={id.pubkey}
+                style={{
+                  padding: '4px',
+                  border: '1px solid black',
+                  margin: '4px',
+                }}
+              >
+                <div style={{ borderBottom: '1px solid black' }}>
+                  pubkey: {ui.fieldElement(id.pubkey)}{' '}
+                  {isMe ? (
+                    <span style={{ fontWeight: 'bold' }}>(me)</span>
+                  ) : null}
+                </div>
+                {auth.tokensByIdentity[id.pubkey].map((token) => (
+                  <div
+                    key={token.hash}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '2px',
+                    }}
+                  >
+                    <div>
+                      {`token${token.index}`}: {ui.fieldElement(token.hash)}
+                    </div>
+                    {isMe ? (
+                      <Button
+                        style={{ marginLeft: '4px' }}
+                        onClick={() => auth.removeToken(token.hash)}
+                      >
+                        Disable
+                      </Button>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            )
+          })}
         </div>
-        </div>
+      </div>
       <div style={{ padding: '4px', border: '1px solid black' }}>
-        <Button onClick={async () => {
-          setNewTokenProof(null)
-          const proof = await auth.addToken()
-          setNewTokenProof(proof)
-        }}>Add Token</Button>
-        {newTokenProof ? (<div>
-          <div>Added token with</div>
-          <div>x: {ui.fieldElement(newTokenProof.token.x)}</div>
-          <div>y: {ui.fieldElement(newTokenProof.token.y)}</div>
-          <div>hash: {ui.fieldElement(newTokenProof.tokenHash)}</div>
-        </div>) : null}
+        <Button
+          onClick={async () => {
+            setNewTokenProof(null)
+            const proof = await auth.addToken()
+            setNewTokenProof(proof)
+          }}
+        >
+          Add Token
+        </Button>
+        {newTokenProof ? (
+          <div>
+            <div>Added token with</div>
+            <div>x: {ui.fieldElement(newTokenProof.token.x)}</div>
+            <div>y: {ui.fieldElement(newTokenProof.token.y)}</div>
+            <div>hash: {ui.fieldElement(newTokenProof.tokenHash)}</div>
+          </div>
+        ) : null}
       </div>
     </div>
   )

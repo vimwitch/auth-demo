@@ -8,7 +8,7 @@ import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const ABI = require('auth/abi/Auth.json')
 
-export default({ app }) => {
+export default ({ app }) => {
   app.post('/api/tx', async (req, res) => {
     try {
       const { publicSignals, proof, circuit, func } = req.body
@@ -20,13 +20,18 @@ export default({ app }) => {
         return
       }
       const appContract = new ethers.Contract(APP_ADDRESS, ABI)
-      const calldata = appContract.interface.encodeFunctionData(
-        func,[_proof.publicSignals, _proof.proof])
-      const hash = await TransactionManager.queueTransaction(APP_ADDRESS, calldata)
+      const calldata = appContract.interface.encodeFunctionData(func, [
+        _proof.publicSignals,
+        _proof.proof,
+      ])
+      const hash = await TransactionManager.queueTransaction(
+        APP_ADDRESS,
+        calldata
+      )
       res.json({ hash })
-    } catch(error) {
+    } catch (error) {
       console.log(error)
-      res.status(500).json({error})
+      res.status(500).json({ error })
     }
   })
 }

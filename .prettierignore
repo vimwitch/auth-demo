@@ -1,0 +1,6 @@
+**/build
+**/artifacts
+**/cache
+**/circuits
+
+packages/relay/keys
