@@ -1,0 +1,17 @@
+{
+  "name": "relay",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "anondb": "^0.0.17",
+    "ethers": "5.7.2",
+    "express": "^4.18.2"
+  }
+}

@@ -1,0 +1,6 @@
+node_modules/
+keys/
+.DS_Store
+*.tmp
+*.swp
+build/
