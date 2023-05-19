@@ -30,7 +30,7 @@ export default class Interface {
 
   fieldElement(v) {
     if (!this.useSmallField) return v.toString()
-    return (BigInt(v) % 19997n).toString()
+    return (BigInt(v) % 1000003n).toString()
   }
 
   updateWindowSize() {
