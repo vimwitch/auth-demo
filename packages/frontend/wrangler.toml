@@ -1,0 +1,12 @@
+name = "auth-demo"
+main = "worker.js"
+compatibility_date = "2022-10-18"
+
+[env.production]
+name = "production"
+
+[env.staging]
+name = "staging"
+
+[site]
+bucket = "./build"

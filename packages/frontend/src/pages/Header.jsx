@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite'
 import './header.css'
 import state from '../contexts/state'
 import Button from '../components/Button'
+import { poseidon1 } from 'poseidon-lite/poseidon1'
 
 export default observer(() => {
   const { auth, ui } = React.useContext(state)
@@ -25,7 +26,9 @@ export default observer(() => {
           {auth.hasRegistered ? (
             <div>
               <div>my pubkey: {ui.fieldElement(auth.identity.pubkey)}</div>
-              <div>my token: {ui.fieldElement(auth.identity.token.y)}</div>
+              <div>
+                my token: {ui.fieldElement(poseidon1([auth.identity.token.y]))}
+              </div>
             </div>
           ) : (
             <Button onClick={async () => auth.register()}>Register</Button>
