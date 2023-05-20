@@ -148,14 +148,15 @@ export class TransactionManager {
       })
     }
     const nonce = await this.getNonce(this.wallet.address)
-    const signedData = await this.wallet.signTransaction({
+    const txReq = await this.wallet.populateTransaction({
       nonce,
       to,
       // gasPrice: 2 * 10 ** 9, // 2 gwei
       // gasPrice: 10000,
-      gasPrice: 299365979,
+      // gasPrice: 299365979,
       ...args,
     })
+    const signedData = await this.wallet.signTransaction(txReq)
     await this._db?.create('AccountTransaction', {
       address: this.wallet.address,
       signedData,
