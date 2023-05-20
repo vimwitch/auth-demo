@@ -13,6 +13,7 @@ WORKDIR /src/node_modules/auth
 # hack to get a noop git command
 RUN echo "#!/bin/sh" > /usr/bin/git && chmod +x /usr/bin/git
 RUN yarn --production
+RUN echo "module.exports = {}" > /src/node_modules/auth/config.js
 
 FROM node:18.15-buster-slim
 
