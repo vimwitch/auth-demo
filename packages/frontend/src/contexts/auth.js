@@ -37,10 +37,7 @@ export default class Auth {
         Promise.all([this.loadIdentities(), this.loadHasRegistered()])
       )
       .then(() => runInAction(() => (this.loading = false)))
-    setInterval(() => {
-      if (document.visibilityState !== 'visible') return
-      this.loadIdentities()
-    }, 5000)
+    this.identity.sync.on('pollEnd', () => this.loadIdentities())
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.identity.sync.start()
