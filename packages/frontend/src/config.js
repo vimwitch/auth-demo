@@ -13,7 +13,7 @@ export const ETH_PROVIDER_URL = prod
   : config.ETH_PROVIDER_URL
 
 export const provider = ETH_PROVIDER_URL.startsWith('http')
-  ? new ethers.providers.JsonRpcProvider(ETH_PROVIDER_URL)
+  ? new ethers.providers.StaticJsonRpcProvider(ETH_PROVIDER_URL)
   : new ethers.providers.WebSocketProvider(ETH_PROVIDER_URL)
 
 export const SERVER = prod

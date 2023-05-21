@@ -11,6 +11,20 @@ export default observer(() => {
   return (
     <>
       <div className="header">
+        <div className="links">
+          {auth.loading ? <div>Loading...</div> : null}
+          {auth.hasRegistered && !auth.loading ? (
+            <div>
+              <div>my pubkey: {ui.fieldElement(auth.identity.pubkey)}</div>
+              <div>
+                my token: {ui.fieldElement(poseidon1([auth.identity.token.y]))}
+              </div>
+            </div>
+          ) : null}
+          {!auth.hasRegistered && !auth.loading ? (
+            <Button onClick={async () => auth.register()}>Register</Button>
+          ) : null}
+        </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <input
             type="checkbox"
@@ -21,18 +35,6 @@ export default observer(() => {
           />
           <span>Use small field</span>
           <div style={{ width: '4px' }} />
-        </div>
-        <div className="links">
-          {auth.hasRegistered ? (
-            <div>
-              <div>my pubkey: {ui.fieldElement(auth.identity.pubkey)}</div>
-              <div>
-                my token: {ui.fieldElement(poseidon1([auth.identity.token.y]))}
-              </div>
-            </div>
-          ) : (
-            <Button onClick={async () => auth.register()}>Register</Button>
-          )}
         </div>
       </div>
       <Outlet />

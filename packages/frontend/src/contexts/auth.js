@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import { makeAutoObservable } from 'mobx'
+import { makeAutoObservable, runInAction } from 'mobx'
 import { APP_ADDRESS, provider, SERVER } from '../config'
 import prover from './prover'
 import Identity from 'auth/src/Identity'
@@ -7,10 +7,13 @@ import Identity from 'auth/src/Identity'
 export default class Auth {
   constructor() {
     this.hasRegistered = false
-    this.identity = null
     this.identities = []
     this.tokensByIdentity = {}
-    makeAutoObservable(this)
+    this.loading = true
+    this.identity = null
+    makeAutoObservable(this, {
+      identity: false,
+    })
     if (typeof window !== 'undefined') {
       this.load()
     }
@@ -33,6 +36,18 @@ export default class Auth {
       .then(() =>
         Promise.all([this.loadIdentities(), this.loadHasRegistered()])
       )
+      .then(() => runInAction(() => (this.loading = false)))
+    setInterval(() => {
+      if (document.visibilityState !== 'visible') return
+      this.loadIdentities()
+    }, 5000)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.identity.sync.start()
+      } else {
+        this.identity.sync.stop()
+      }
+    })
   }
 
   async loadHasRegistered() {
@@ -41,7 +56,7 @@ export default class Auth {
         pubkey: this.identity.pubkey.toString(),
       },
     })
-    this.hasRegistered = !!id
+    runInAction(() => (this.hasRegistered = !!id))
   }
 
   async loadIdentities() {
@@ -50,7 +65,7 @@ export default class Auth {
         pubkey: { ne: '0' },
       },
     })
-    this.identities = identities
+    runInAction(() => (this.identities = identities))
     for (const id of identities) {
       const tokens = await this.identity.sync._db.findMany('Token', {
         where: {
@@ -60,10 +75,13 @@ export default class Auth {
           pubkey: id.pubkey,
         },
       })
-      this.tokensByIdentity = {
-        ...this.tokensByIdentity,
-        [id.pubkey]: tokens,
-      }
+      runInAction(
+        () =>
+          (this.tokensByIdentity = {
+            ...this.tokensByIdentity,
+            [id.pubkey]: tokens,
+          })
+      )
     }
   }
 
