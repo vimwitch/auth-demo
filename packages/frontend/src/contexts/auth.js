@@ -38,7 +38,6 @@ export default class Auth {
       'AddToken',
       action(({ event, decodedData }) => {
         const { pubkey, tokenHash } = decodedData
-        console.log(event)
         this.events = [
           ...this.events,
           {
