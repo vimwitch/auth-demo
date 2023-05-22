@@ -128,19 +128,31 @@ export default observer(() => {
         ) : null}
         <div className="container">
           <div>Events</div>
-          {[...auth.events].reverse().map(({ pubkey, action, tokenHash }) => (
-            <div
-              key={`${pubkey}${action}${tokenHash}`}
-              style={{
-                padding: '4px',
-                border: '1px solid black',
-                margin: '2px',
-              }}
-            >
-              Identity <strong>{ui.fieldElement(pubkey)}</strong> {action}{' '}
-              <strong>{ui.fieldElement(tokenHash)}</strong>
-            </div>
-          ))}
+          {[...auth.events]
+            .reverse()
+            .map(({ pubkey, action, tokenHash, tx }) => (
+              <div
+                key={`${pubkey}${action}${tokenHash}`}
+                style={{
+                  padding: '4px',
+                  border: '1px solid black',
+                  margin: '2px',
+                  display: 'flex',
+                }}
+              >
+                <a
+                  href={`https://sepolia.etherscan.io/tx/${tx}`}
+                  target="_blank"
+                >
+                  tx
+                </a>
+                <div style={{ width: '5px', height: '5px' }} />
+                <div>
+                  Identity <strong>{ui.fieldElement(pubkey)}</strong> {action}{' '}
+                  <strong>{ui.fieldElement(tokenHash)}</strong>
+                </div>
+              </div>
+            ))}
         </div>
       </div>
     </div>

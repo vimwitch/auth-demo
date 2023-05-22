@@ -36,21 +36,23 @@ export default class Auth {
     })
     this.identity.sync.on(
       'AddToken',
-      action(({ decodedData }) => {
+      action(({ event, decodedData }) => {
         const { pubkey, tokenHash } = decodedData
+        console.log(event)
         this.events = [
           ...this.events,
           {
             action: 'added token with hash',
             pubkey,
             tokenHash,
+            tx: event.transactionHash,
           },
         ]
       })
     )
     this.identity.sync.on(
       'RemoveToken',
-      action(({ decodedData }) => {
+      action(({ event, decodedData }) => {
         const { pubkey, tokenHash } = decodedData
         this.events = [
           ...this.events,
@@ -58,13 +60,14 @@ export default class Auth {
             action: 'removed token with hash',
             pubkey,
             tokenHash,
+            tx: event.transactionHash,
           },
         ]
       })
     )
     this.identity.sync.on(
       'Register',
-      action(({ decodedData }) => {
+      action(({ event, decodedData }) => {
         const { pubkey, tokenHash } = decodedData
         this.events = [
           ...this.events,
@@ -72,13 +75,14 @@ export default class Auth {
             action: 'registered with hash',
             pubkey,
             tokenHash,
+            tx: event.transactionHash,
           },
         ]
       })
     )
     this.identity.sync.on(
       'RecoverIdentity',
-      action(({ decodedData }) => {
+      action(({ event, decodedData }) => {
         const { pubkey, tokenHash } = decodedData
         this.events = [
           ...this.events,
@@ -86,6 +90,7 @@ export default class Auth {
             action: 'reset account with token',
             pubkey,
             tokenHash,
+            tx: event.transactionHash,
           },
         ]
       })

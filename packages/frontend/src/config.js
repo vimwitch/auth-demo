@@ -4,7 +4,7 @@ import config from 'auth/config.js'
 const prod = NODE_ENV === 'production'
 
 const _APP_ADDRESS = prod
-  ? '0x903AE3b647638342d4Bf40E4680Cb14FC182839b'
+  ? '0x099451bfeA1B01A9D6915Ed4CC93cf45e83E88fD'
   : undefined
 
 export const APP_ADDRESS = _APP_ADDRESS ?? config.APP_ADDRESS
