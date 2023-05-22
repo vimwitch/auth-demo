@@ -162,7 +162,8 @@ export default class Auth {
     }
   }
 
-  async register() {
+  async register(setText) {
+    setText('Proving...')
     await new Promise((r) => setTimeout(r, 1))
     const regProof = await this.identity.registerProof()
     const token = this.identity.token
@@ -175,6 +176,7 @@ export default class Auth {
     })
     localStorage.setItem(pubkey.toString(), JSON.stringify(codes))
     const { hash } = await this.sendTx(regProof, 'register', 'register')
+    setText('Waiting for tx...')
     await provider.waitForTransaction(hash)
     await this.identity.sync.waitForSync()
     await this.loadHasRegistered()
@@ -191,24 +193,29 @@ export default class Auth {
     )
   }
 
-  async addToken() {
+  async addToken(setText) {
+    setText('Proving...')
     await new Promise((r) => setTimeout(r, 1))
     const tokenProof = await this.identity.addTokenProof()
     const { hash } = await this.sendTx(tokenProof, 'addToken', 'addToken')
+    setText('Waiting for tx...')
     await provider.waitForTransaction(hash)
     await this.identity.sync.waitForSync()
     return tokenProof
   }
 
-  async removeToken(tokenHash) {
+  async removeToken(tokenHash, setText) {
+    setText('Proving...')
     await new Promise((r) => setTimeout(r, 1))
     const tokenProof = await this.identity.removeTokenProof({ tokenHash })
     const { hash } = await this.sendTx(tokenProof, 'removeToken', 'removeToken')
+    setText('Waiting for tx...')
     await provider.waitForTransaction(hash)
     await this.identity.sync.waitForSync()
   }
 
-  async recoverIdentity(recoveryCode) {
+  async recoverIdentity(recoveryCode, setText) {
+    setText('Proving...')
     await new Promise((r) => setTimeout(r, 1))
     const proof = await this.identity.recoveryProof({ recoveryCode })
     this.identity.token = proof.token
@@ -227,6 +234,7 @@ export default class Auth {
       'recoverIdentity',
       'recoverIdentity'
     )
+    setText('Waiting for tx...')
     await provider.waitForTransaction(hash)
     await this.identity.sync.waitForSync()
   }

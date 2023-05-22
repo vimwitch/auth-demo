@@ -60,7 +60,9 @@ export default observer(() => {
                   {isMe ? (
                     <Button
                       style={{ marginLeft: '4px' }}
-                      onClick={() => auth.removeToken(token.hash)}
+                      onClick={(setText) =>
+                        auth.removeToken(token.hash, setText)
+                      }
                     >
                       Disable
                     </Button>
@@ -79,9 +81,9 @@ export default observer(() => {
             style={{ padding: '4px', border: '1px solid black' }}
           >
             <Button
-              onClick={async () => {
+              onClick={async (setText) => {
                 setNewTokenProof(null)
-                const proof = await auth.addToken()
+                const proof = await auth.addToken(setText)
                 setNewTokenProof(proof)
               }}
             >
@@ -116,8 +118,8 @@ export default observer(() => {
             </select>
             <div style={{ height: '2px' }} />
             <Button
-              onClick={async () => {
-                await auth.recoverIdentity(recoveryCode)
+              onClick={async (setText) => {
+                await auth.recoverIdentity(recoveryCode, setText)
               }}
             >
               Recover Account

@@ -22,7 +22,9 @@ export default observer(() => {
             </div>
           ) : null}
           {!auth.hasRegistered && !auth.loading ? (
-            <Button onClick={async () => auth.register()}>Register</Button>
+            <Button onClick={async (update) => auth.register(update)}>
+              Register
+            </Button>
           ) : null}
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
