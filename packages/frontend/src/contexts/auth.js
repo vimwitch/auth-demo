@@ -1,18 +1,22 @@
 import { createContext } from 'react'
-import { makeAutoObservable, runInAction } from 'mobx'
+import { makeAutoObservable, runInAction, action } from 'mobx'
 import { APP_ADDRESS, provider, SERVER } from '../config'
 import prover from './prover'
 import Identity from 'auth/src/Identity'
 
 export default class Auth {
-  constructor() {
+  constructor(state) {
+    this.state = state
     this.hasRegistered = false
     this.identities = []
     this.tokensByIdentity = {}
     this.loading = true
     this.identity = null
+    this.recoveryCodes = []
+    this.events = []
     makeAutoObservable(this, {
       identity: false,
+      state: false,
     })
     if (typeof window !== 'undefined') {
       this.load()
@@ -30,20 +34,92 @@ export default class Auth {
       provider,
       ...id,
     })
+    this.identity.sync.on(
+      'AddToken',
+      action(({ decodedData }) => {
+        const { pubkey, tokenHash } = decodedData
+        this.events = [
+          ...this.events,
+          {
+            action: 'added token with hash',
+            pubkey,
+            tokenHash,
+          },
+        ]
+      })
+    )
+    this.identity.sync.on(
+      'RemoveToken',
+      action(({ decodedData }) => {
+        const { pubkey, tokenHash } = decodedData
+        this.events = [
+          ...this.events,
+          {
+            action: 'removed token with hash',
+            pubkey,
+            tokenHash,
+          },
+        ]
+      })
+    )
+    this.identity.sync.on(
+      'Register',
+      action(({ decodedData }) => {
+        const { pubkey, tokenHash } = decodedData
+        this.events = [
+          ...this.events,
+          {
+            action: 'registered with hash',
+            pubkey,
+            tokenHash,
+          },
+        ]
+      })
+    )
+    this.identity.sync.on(
+      'RecoverIdentity',
+      action(({ decodedData }) => {
+        const { pubkey, tokenHash } = decodedData
+        this.events = [
+          ...this.events,
+          {
+            action: 'reset account with token',
+            pubkey,
+            tokenHash,
+          },
+        ]
+      })
+    )
     await this.identity.sync.start()
     this.identity.sync
       .waitForSync()
-      .then(() =>
-        Promise.all([this.loadIdentities(), this.loadHasRegistered()])
-      )
       .then(() => runInAction(() => (this.loading = false)))
-    this.identity.sync.on('pollEnd', () => this.loadIdentities())
+    this.identity.sync.on('pollEnd', () =>
+      Promise.all([
+        this.loadIdentities(),
+        this.loadRecoveryCodes(),
+        this.loadHasRegistered(),
+      ])
+    )
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.identity.sync.start()
       } else {
         this.identity.sync.stop()
       }
+    })
+    const codes = localStorage.getItem(this.identity.pubkey.toString())
+    if (codes) {
+      const parsed = JSON.parse(codes)
+      await this.identity.sync._db.create('RecoveryCode', parsed)
+    }
+  }
+
+  async loadRecoveryCodes() {
+    this.recoveryCodes = await this.identity.sync._db.findMany('RecoveryCode', {
+      where: {
+        pubkey: this.identity.pubkey.toString(),
+      },
     })
   }
 
@@ -69,7 +145,7 @@ export default class Auth {
           hash: {
             ne: '0',
           },
-          pubkey: id.pubkey,
+          pubkey: id.pubkey.toString(),
         },
       })
       runInAction(
@@ -87,6 +163,13 @@ export default class Auth {
     const regProof = await this.identity.registerProof()
     const token = this.identity.token
     const pubkey = this.identity.pubkey
+    // commit the recovery codes to local storage
+    const codes = await this.identity.sync._db.findMany('RecoveryCode', {
+      where: {
+        pubkey: pubkey.toString(),
+      },
+    })
+    localStorage.setItem(pubkey.toString(), JSON.stringify(codes))
     const { hash } = await this.sendTx(regProof, 'register', 'register')
     await provider.waitForTransaction(hash)
     await this.identity.sync.waitForSync()
@@ -110,7 +193,6 @@ export default class Auth {
     const { hash } = await this.sendTx(tokenProof, 'addToken', 'addToken')
     await provider.waitForTransaction(hash)
     await this.identity.sync.waitForSync()
-    await this.loadIdentities()
     return tokenProof
   }
 
@@ -120,7 +202,29 @@ export default class Auth {
     const { hash } = await this.sendTx(tokenProof, 'removeToken', 'removeToken')
     await provider.waitForTransaction(hash)
     await this.identity.sync.waitForSync()
-    await this.loadIdentities()
+  }
+
+  async recoverIdentity(recoveryCode) {
+    await new Promise((r) => setTimeout(r, 1))
+    const proof = await this.identity.recoveryProof({ recoveryCode })
+    this.identity.token = proof.token
+    localStorage.setItem(
+      'id',
+      JSON.stringify({
+        token: {
+          x: proof.token.x.toString(),
+          y: proof.token.y.toString(),
+        },
+        pubkey: this.identity.pubkey.toString(),
+      })
+    )
+    const { hash } = await this.sendTx(
+      proof,
+      'recoverIdentity',
+      'recoverIdentity'
+    )
+    await provider.waitForTransaction(hash)
+    await this.identity.sync.waitForSync()
   }
 
   async sendTx(proof, circuit, func) {
